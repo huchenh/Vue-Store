@@ -1,11 +1,16 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const orders = sequelize.define('orders', {
-    id: {
+    /* id: {
       allowNull: false,
       autoIncrement: true,
       primaryKey: true,
       type: DataTypes.INTEGER
+    }, */ 
+    order_id:{
+      type: DataTypes.INTEGER,
+      allowNull:false,
+      primaryKey:true
     },
     user_id: {
       type: DataTypes.INTEGER,
@@ -15,10 +20,6 @@ module.exports = (sequelize, DataTypes) => {
         key: 'user_id'
       }
     },
-    order_id:{
-      type: DataTypes.INTEGER,
-      allowNull:false
-    },
     address_id:{
       type: DataTypes.INTEGER,
       allowNull:false
@@ -27,22 +28,32 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull:false
     },
-    createdAt: {
+    createDate: {
       allowNull: false,
       type: DataTypes.DATE
     },
-    updatedAt: {
+    updateDate: {
       allowNull: false,
       type: DataTypes.DATE
     }
     // user_id: DataTypes.INTEGER
   }, {
-    tableName:'orders'
+    tableName:'orders',
+    createdAt:'createDate',
+    updatedAt:'updateDate',
+    timestamps:true
   });
   orders.associate = function(models) {
     // associations can be defined here
     orders.belongsTo(models.users,{
       foreignKey:'user_id'
+    })
+    orders.belongsToMany(models.goods,{
+      // as:'sellGoods',
+      foreignKey:'product_id',
+      through: {
+        model: models.orderGoods
+      }
     })
   };
   return orders;

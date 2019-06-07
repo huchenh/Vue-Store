@@ -72,6 +72,13 @@ GoodRouter.get('/list', async ctx=>{
 GoodRouter.post('/addCart', async ctx=> {
 	let userId = ctx.session.userid,
 	{productId} = ctx.request.body;
+	if(!userId){
+		return ctx.body = {
+			status: '1',
+			msg: '请先登录',
+			result: '请先登录'
+		}
+	}
 	let [err1,cart] = await handlerAsyncError(Models.carts.findOne({
 		where:{
 			user_id:userId,

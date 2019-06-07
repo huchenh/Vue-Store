@@ -133,6 +133,8 @@
             this.getCartCount()
             
             this.loginModalFlag = false;
+          }else{
+            this.loginModalFlag = true;
           }
         })
       },

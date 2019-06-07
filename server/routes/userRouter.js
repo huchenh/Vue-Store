@@ -5,10 +5,21 @@ const { Sequelize:{Op} } = Models.sequelize;
 const { handlerAsyncError } = require('../utils/index')
 
 /* GET users listing. */
-UserRouter.get('/', async (ctx)=>{
-	ctx.body = 'respond with a resource'
+/* UserRouter.get('/', async (ctx)=>{
+	// 登录校验
+  var userId = ctx.session.userid;
+	if(!userId){
+		return ctx.body ={
+			status: '1',
+			msg: "请先登录",
+			result: '请先登录'
+		}
+  }else{
+    next()
+	}
+	console.log('登录校验')
 });
-
+ */
 //注册接口
 UserRouter.post('/register',async ctx=>{
 	let {userName,userPwd} = ctx.request.body;
@@ -332,38 +343,112 @@ UserRouter.get('/getCartCount', async ctx=> {
 })
 
 //查询用户地址
-UserRouter.get('/addressList', function(req, res, next) {
-	var userId = req.cookies.userId;
-	User.findOne({
-		userId: userId
-	}, function(err, doc) {
-		if (err) {
-			res.json({
-				status: '1',
-				msg: err.message,
-				result: ''
-			})
-		} else {
-			res.json({
-				status: '0',
-				msg: '',
-				result: doc.addressList
-			})
+UserRouter.get('/addressList', async ctx=> {
+	var userId = ctx.session.userid;
+	if(!userId){
+		return ctx.body ={
+			status: '1',
+			msg: "请先登录",
+			result: '请先登录'
 		}
-	})
+	}
+	let [err,rs] = await handlerAsyncError(Models.address.findAll({
+		where:{
+			user_id:userId
+		}
+	}))
+	if(err){
+		return ctx.body = {
+			status: '1',
+			msg: err.message,
+			result: ''
+		}
+	}
+	let addressList = [];
+	if(rs){
+		rs.forEach(item=>{
+			let {user_id:userId,address_id:addressId,user_name:userName,street_name:streetName,post_code:postCode,tel,is_default:isDefault} = item;
+			addressList.push({
+				userId,
+				addressId,
+				userName,
+				streetName,
+				postCode,
+				tel,
+				isDefault
+			})
+		})
+		return ctx.body = {
+			status: '0',
+			msg: '',
+			result: addressList
+		}
+	}
 })
 //设置默认地址
-UserRouter.post('/setDefault', function(req, res, next) {
-	var userId = req.cookies.userId,
-		addressId = req.body.addressId;
+UserRouter.post('/setDefault', async ctx=> {
+	let userId = ctx.session.userid,
+		{addressId} = ctx.request.body;
 	if (!addressId) {
-		res.json({
+		return ctx.body = {
 			status: '1003',
 			msg: 'addressId is null',
 			result: ''
-		})
-	} else {
-		User.findOne({
+		}
+	}
+	let [err,address] = await handlerAsyncError(Models.address.findOne({
+		attributes:['address_id','is_default'],
+		where:{
+			user_id: userId,
+			address_id:addressId
+		}
+	}))
+	if(err){
+		return ctx.body = {
+			status: '1',
+			msg: err.message,
+			result: ''
+		}
+	}
+	console.log('address',address.is_default)
+	if(address && address.is_default == 0){
+		// 先清楚其他地址的默认设置
+		let [error,res] = await handlerAsyncError(Models.address.update(
+			{is_default:0},
+			{where:{'is_default':1}}
+		))
+		if(error){
+			return ctx.body = {
+				status: '1',
+				msg: err.message,
+				result: ''
+			}
+		}	
+		address.is_default = 1
+		let [err,rs] = await handlerAsyncError(address.save())
+		if(err){
+			return ctx.body = {
+				status: '1',
+				msg: err.message,
+				result: ''
+			}
+		}			
+		if(rs){
+			return ctx.body = {
+				status: '0',
+				msg: '',
+				result: 'succeess'
+			}
+		}
+		
+	}else{
+		ctx.body = {
+			status: '0',
+			msg: '',
+			result: 'succeess'
+		}
+	}
+		/* User.findOne({
 			userId: userId
 		}, function(err, doc) {
 			if (err) {
@@ -399,252 +484,227 @@ UserRouter.post('/setDefault', function(req, res, next) {
 				})
 
 			}
-		})
-	}
-
+		}) */
 })
 //删除地址
-UserRouter.post('/delAddress', function(req, res, next) {
-	var userId = req.cookies.userId,
-		addressId = req.body.addressId;
-	User.update({
-		userId: userId
-	}, {
-		$pull: {
-			'addressList': {
-				'addressId': addressId
-			}
+UserRouter.post('/delAddress', async ctx=> {
+	let userId = ctx.session.userid,
+		{addressId} = ctx.request.body;
+	let [err,rs] = await handlerAsyncError(Models.address.destroy({
+		where:{
+			user_id:userId,
+			address_id:addressId
 		}
-	}, function(err, doc) {
-		if (err) {
-			res.json({
-				status: '1',
-				msg: err.message,
-				result: ''
-			})
-		} else {
-			if (doc) {
-				res.json({
-					status: '0',
-					msg: '',
-					result: 'succeess'
-				})
-			}
+	}))
+	if(err){
+		return ctx.body = {
+			status: '1',
+			msg: err.message,
+			result: ''
 		}
-	})
+	}else{
+		// console.log('rs',rs)
+		ctx.body = {
+			status: '0',
+			msg: '',
+			result: 'succeess'
+		}
+	}
 })
 
 //添加地址
-UserRouter.post('/addAddress', function(req, res, next) {
-	var param = {
-		userName: req.body.userName,
-		streetName: req.body.streetName,
-		postCode: req.body.postCode,
-		tel: req.body.tel
-	}
-	// console.log(param)
-	var userId = req.cookies.userId
-	User.findOne({
-		userId: userId
-	}, function(err, doc) {
-		if (err) {
-			res.json({
-				status: '1',
-				msg: err.message,
-				result: ''
-			})
-		} else {
-			// console.log(doc.addressList)
-			let len = doc.addressList.length;
-			let flag = false;
-			let maxId = 0;
-			if (len > 0) {
-				doc.addressList.forEach((item) => {
-					if (item.userName == param.userName && item.streetName == param.streetName && item.tel == param.tel) {
-						flag = true;
-					}
-					if (maxId < parseInt(item.addressId)) {
-						maxId = parseInt(item.addressId) + 1;
-					}
-				})
-				if (flag) {
-					res.json({
-						status: '10',
-						msg: '',
-						result: '地址已存在'
-					})
-				} else {
-					param['addressId'] = maxId;
-					param['isDefault'] = false;
-					doc.addressList.unshift(param);
-					doc.save(function(err1, doc) {
-						if (err1) {
-							res.json({
-								status: '1',
-								msg: err1.message,
-								result: '',
-							})
-						} else {
-							res.json({
-								status: '0',
-								msg: '',
-								success: 'add success'
-							})
-
-						}
-					})
-				}
-			} else {
-				param['addressId'] = (100001 + Number(len)).toString();
-				param['isDefault'] = false;
-				doc.addressList.unshift(param);
-				doc.save(function(err1, doc) {
-					if (err1) {
-						res.json({
-							status: '1',
-							msg: err1.message,
-							result: '',
-						})
-					} else {
-						res.json({
-							status: '0',
-							msg: '',
-							success: 'add success'
-						})
-
-					}
-				})
-			}
-
-			/*res.json({
-				status: '0',
-				msg: '',
-				result: 'add success'
-			})*/
+UserRouter.post('/addAddress', async ctx=> {
+	let userId = ctx.session.userid;
+	let { userName,streetName,postCode,tel } = ctx.request.body
+	console.log('param',userName,streetName,postCode,tel)
+	let [err,address] = await handlerAsyncError(Models.address.findOne({
+		where:{
+			user_name:userName,
+			street_name:streetName,
+			post_code:postCode,
+			tel:tel
 		}
-	})
-
-
+	}))
+	if(err){
+		return ctx.body = {
+			status: '1',
+			msg: err.message,
+			result: ''
+		}
+	}
+	if(address){
+		return ctx.body = {
+			status: '10',
+			msg: '',
+			result: '地址已存在'
+		}
+	}
+	// 新增地址
+	let [err1,address1] = await handlerAsyncError(Models.address.findAll({
+		attributes:['address_id','user_name'],
+		order:[['address_id','DESC']],
+		limit:1
+	}))
+	console.log('address1',address1)
+	// console.log('address1',address1[0].address_id)
+	if(err1){
+		return ctx.body = {
+			status: '1',
+			msg: err1.message,
+			result: ''
+		}
+	}
+	// 初始地址编号
+	let addressId = 100000; 
+	if(address1.length > 0){
+		addressId = address1[0].address_id + 1; 
+	}
+	let [err2,rs] = await handlerAsyncError(Models.address.create({
+		user_id:userId,
+		address_id:addressId,
+		user_name:userName,
+		street_name:streetName,
+		post_code:postCode,
+		tel
+	}))
+	if(err2){
+		return ctx.body = {
+			status: '1',
+			msg: err2.message,
+			result: ''
+		}
+	}else{
+		return ctx.body={
+			status: '0',
+			msg: '',
+			success: 'add success'
+		}
+	}
+	
 })
 
 //确认订单
-UserRouter.post('/payMent', function(req, res, next) {
-	var userId = req.cookies.userId,
-		orderTotal = req.body.orderTotal,
-		addressId = req.body.addressId;
-	User.findOne({
-		userId: userId
-	}, function(err, doc) {
-		if (err) {
-			res.json({
-				status: '1',
-				msg: err.message,
-				result: ''
-			})
-		} else {
-			//获取用户的地址信息
-			var address = '',
-				goodsList = [];
-			doc.addressList.forEach((item) => {
-				if (addressId == item.addressId) {
-					address = item;
-				}
-			})
-			//获取用户的商品信息
-			doc.cartList.filter((item) => {
-				if (item.checked == '1') {
-					goodsList.push(item)
-				}
-			})
+UserRouter.post('/payMent', async ctx=> {
+	let userId = ctx.session.userid,
+		{ orderTotal , addressId } = ctx.request.body;
+	//user_id order_id address_id order_total
+	let platForm = '622',
+	r1 = Math.floor(Math.random() * 10),
+	r2 = Math.floor(Math.random() * 10),
+	sysDate = new Date().getTime(),
+	createDate = new Date(),
+	orderId = platForm + r1 + sysDate + r2;
 
-			var platForm = '622'
-			var r1 = Math.floor(Math.random() * 10)
-			var r2 = Math.floor(Math.random() * 10)
-			var sysDate = new Date().Format('yyyyMMddhhmmss')
-			var createDate = new Date().Format('yyyy-MM-dd hh:mm:ss')
-
-			var orderId = platForm + r1 + sysDate + r2;
-			var order = {
-				orderId: orderId,
-				orderTotal: orderTotal,
-				addressInfo: address,
-				goodsList: goodsList,
-				orderStatus: '1',
-				createDate: createDate
-			}
-
-
-			doc.orederList.push(order);
-			doc.save(function(err1, doc1) {
-				if (err1) {
-					res.json({
-						status: '1',
-						msg: err.message,
-						result: ''
-					})
-				} else {
-					res.json({
-						status: '0',
-						msg: '',
-						result: {
-							orderId: order.orderId,
-							orderTotal: order.orderTotal
-						}
-					})
-				}
-			})
-
+	// 获取商品信息
+	let [error,usergoods] = await handlerAsyncError(Models.carts.findAll({
+		attributes:['user_id','product_id','product_count'],
+		where:{
+			user_id:userId,
+			checked:1
 		}
+	}))
+	if(error){
+		return ctx.body = {
+			status: '1',
+			msg: error.message,
+			result: ''
+		}
+	}
+	let orderGoods = []
+	usergoods.forEach(item=>{
+		orderGoods.push({
+			order_id:orderId,
+			product_id:item.product_id,
+			product_count:item.product_count
+		})
 	})
+	// console.log('ordergoods',orderGoods)
+	// return;
+	// 订单商品表插入数据 usergoods
+	let [error1,res1] = await handlerAsyncError(Models.orderGoods.bulkCreate(orderGoods))
+	if(error1){
+		return ctx.body = {
+			status: '1',
+			msg: error1.message,
+			result: ''
+		}
+	}
+
+	// console.log('usergoods',usergoods)
+	// 订单表添加记录
+	let [err,res] = await handlerAsyncError(	Models.orders.create({
+		user_id:userId,
+		order_id:orderId,
+		address_id:addressId,
+		order_total:orderTotal,
+		createDate,
+		updateDate:createDate
+	}))
+	if(err){
+		return ctx.body = {
+			status: '1',
+			msg: err.message,
+			result: ''
+		}
+	}
+
+	// 购物车商品移除 已生成订单的商品
+	let [error2,res2] = await handlerAsyncError(Models.carts.destroy({
+		where:{
+			user_id:userId,
+			checked:1
+		}
+	}))
+
+	if(error2){
+		return ctx.body = {
+			status: '1',
+			msg: error2.message,
+			result: ''
+		}
+	}
+	ctx.body = {
+		status: '0',
+		msg: '',
+		result: {
+			orderId,
+			orderTotal
+		}
+	}
 })
 
 //根据订单id 查询订单信息
-UserRouter.get('/orderDetail', function(req, res, next) {
-	var userId = req.cookies.userId,
-		orderId = req.param('orderId');
-	User.findOne({
-		userId: userId
-	}, function(err, userInfo) {
-		if (err) {
-			res.json({
-				status: '1',
-				msg: err.message,
-				result: ''
-			})
-		} else {
-			var orderList = userInfo.orederList;
-			var orderTotal = 0;
-			if (orderList.length > 0) {
-				orderList.forEach((item) => {
-					if (item.orderId == orderId) {
-						orderTotal = item.orderTotal;
-					}
-				})
-				if (orderTotal > 0) {
-					res.json({
-						status: '0',
-						msg: '',
-						result: {
-							orderId: orderId,
-							orderTotal: orderTotal
-						}
-					})
-				} else {
-					res.json({
-						status: '120002',
-						msg: '无此订单',
-						result: ''
-					})
-				}
-
-			} else {
-				res.json({
-					status: '120001',
-					msg: '当前用户为创建订单',
-					result: ''
-				})
+UserRouter.get('/orderDetail', async ctx=> {
+	let userId = ctx.session.userid,
+		{orderId} = ctx.request.query;
+	let [err,res] = await handlerAsyncError(Models.orders.findOne({
+		where:{
+			user_id:userId,
+			order_id:orderId
+		}
+	}))
+	if(err){
+		return ctx.body = {
+			status: '1',
+			msg: err.message,
+			result: ''
+		}
+	}
+	if(res){
+		return ctx.body = {
+			status: '0',
+			msg: '',
+			result: {
+				orderId,
+				orderTotal:res.order_total
 			}
 		}
-	})
+	}else{
+		return ctx.body = {
+			status: '120002',
+			msg: '无此订单',
+			result: ''
+		}
+	}
 })
 module.exports = UserRouter;

@@ -2,6 +2,7 @@ const Koa = require('koa')
 const KoaBodyParser = require('koa-bodyparser')
 const router = require('./routes/index')
 const session = require('koa-session')
+// const morgan = require('morgan')
 
 const app = new Koa()
 app.keys = ['this is my secret sesssion or password']
@@ -17,6 +18,7 @@ app.use(session({
   renew: false,
 },app))
 app.use(KoaBodyParser())
+// app.use(morgan('combined'))
 app.use(router.routes())
 
 app.listen(9000,()=>{

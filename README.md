@@ -39,17 +39,28 @@ node app.js
 - 目前完成 商品展示分页接口 用户登录，注册，登出， 购物车展示接口
 - 待续。。。。
 ## API(后台路由)设计
-API概览（参照）：[https://github.com/huchenh/storeProject/blob/master/README.md]
+API概览（参照）：[https://github.com/huchenh/storeProject/blob/master/README.md] <br/>
+文档:<br/>
+- [sequlize](https://github.com/demopark/sequelize-docs-Zh-CN/blob/v4/instances.md)
+- [sequlize-cli](https://www.npmjs.com/package/sequelize-cli)
 
 
 ## 数据库结构设计
+
+### 表格映射关系
+1. 一对多
+   - 用户表（users） ---- 地址表（address）
+   - 用户表（users） ---- 订单表（orders）
+2. 多对多
+    - 用户表（users） ---- 商品表（goods）----> 中间表（carts）
+    - 订单表（orders） ---- 商品表（goods）----> 中间表（orderGoods）
+
 ### 用户表
 > **Table: users**
 
 |名称|类型|允许空|默认值|主键|说明|
 |:--:|:--:|:--:|:--:|:--:|:--:|
-| id | INTEGER | No | - | Yes | 用户id |
-| user_id | Integer(9) | No | - | No | 用户id |
+| user_id | Integer(9) | No | - | yes | 用户id |
 | username | VARCHAR(20) | No | - | No | 用户名 |
 | password | CHAR(32) | No | - | No | 密码 |
 
@@ -64,8 +75,7 @@ API概览（参照）：[https://github.com/huchenh/storeProject/blob/master/REA
 
 |名称|类型|允许空|默认值|主键|说明|
 |:-:|:--:|:----:|:---:|:--:|:--:|
-| id | INTEGER | No | - | Yes | 内容id |
-| product_id | INTEGER | No | - | No | 商品id |
+| product_id | INTEGER | No | - | yes | 商品id |
 | product_name | VARCHAR(50) | No | - | No | 商品名称 |
 | sale_price | INTEGER | No | 0 | No | 商品价格 |
 | product_image | VARCHAR(100) | No | 0 | No | 商品图片 |
@@ -86,6 +96,7 @@ API概览（参照）：[https://github.com/huchenh/storeProject/blob/master/REA
 | user_id | INTEGER | No | - | No | 用户id |
 | product_id | INTEGER | No | - | No | 商品id |
 | product_count | INTEGER | No | - | No | 商品数量 |
+| checked | INTEGER | No | - | No | 是否勾选 |
 
 > **Indexes**
 
@@ -105,9 +116,8 @@ API概览（参照）：[https://github.com/huchenh/storeProject/blob/master/REA
 
 |名称|类型|允许空|默认值|主键|说明|
 |:-:|:--:|:----:|:---:|:--:|:--:|
-| id | INTEGER | No | - | Yes |id |
+| address_id | INTEGER | No | - | yes | 地址id |
 | user_id | INTEGER | No | - | No | 用户id |
-| address_id | INTEGER | No | - | No | 地址id |
 | user_name | VARCHAR(10) | No | - | No | 收货人姓名 |
 | street_name | VARCHAR(50) | No | - | No | 收货人姓名 |
 | post_code |  VARCHAR(10) | No | - | No | 邮编 |
@@ -131,9 +141,8 @@ API概览（参照）：[https://github.com/huchenh/storeProject/blob/master/REA
 
 |名称|类型|允许空|默认值|主键|说明|
 |:-:|:--:|:----:|:---:|:--:|:--:|
-| id | INTEGER | No | - | Yes | _id |
+| order_id | INTEGER | No | - | yes | 订单id |
 | user_id | INTEGER | No | - | No | 用户id |
-| order_id | INTEGER | No | - | No | 订单id |
 | address_id | INTEGER | No | - | No | 地址id |
 | order_total | INTEGER | No | - | No | 订单金额 |
 
@@ -151,3 +160,17 @@ API概览（参照）：[https://github.com/huchenh/storeProject/blob/master/REA
 | address_id | address | address_id |
 | user_id | users | user_id |
 
+### 订单商品对照表
+|名称|类型|允许空|默认值|主键|说明|
+|:-:|:--:|:----:|:---:|:--:|:--:|
+| _id | INTEGER | No | - | yes | id |
+| order_id | INTEGER | No | - | NO | 订单id |
+| product_id | INTEGER | No | - | No | 商品id |
+| product_count | INTEGER | No | - | No | 商品数量 |
+
+> **Foreign Key**
+
+|名称|外键表|外键表字段|
+|:--:|:--:|:--:|
+| order_id | order | address_id |
+| product_id | goods | product_id |
