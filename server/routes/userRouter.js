@@ -78,7 +78,6 @@ UserRouter.post('/login',async ctx=>{
 			msg: err.message
 		}
 	}
-	console.log('user',user)
 	if(user){
 		ctx.session.username = user.get('username')
 		ctx.session.userid = user.get('user_id')
@@ -167,7 +166,6 @@ UserRouter.get('/cartList', async ctx => {
 	const cartList = [];
 	const user = rs.dataValues;
 	const { goods } = user;
-	console.log('user',goods[0].dataValues.carts.dataValues)
 	goods.forEach(good=>{
 		let item = {
 			productImage: good.dataValues['product_image'],
@@ -188,10 +186,39 @@ UserRouter.get('/cartList', async ctx => {
 })
 
 //购物车删除商品
-UserRouter.post('/cartdel', function(req, res, next) {
-	var userId = req.cookies.userId,
-		productId = req.body.productId;
-	User.update({
+UserRouter.post('/cartdel', async ctx=> {
+	let userId = ctx.session.userid,
+	{productId} = ctx.request.body;
+	let [err1,cart] = await handlerAsyncError(Models.carts.findOne({
+		where:{
+			user_id:userId,
+			product_id:productId
+		}
+	}))
+	if(err1){
+		return ctx.body={
+			status: '1',
+			msg: err1.message,
+			result: ''
+		}
+	}
+	// 删除该记录
+	let [err2,rs] = await handlerAsyncError(cart.destroy())
+	if(err2){
+		return ctx.body={
+			status: '1',
+			msg: err2.message,
+			result: ''
+		}
+	}
+	if(rs){
+		return ctx.body = {
+			status: '0',
+			msg: '',
+			result: 'success'
+		}
+	}
+	/* User.update({
 		userId: userId
 	}, {
 		$pull: {
@@ -213,86 +240,83 @@ UserRouter.post('/cartdel', function(req, res, next) {
 				result: 'succeess'
 			})
 		}
-	})
+	}) */
 })
 //购物车修改
-UserRouter.post('/cartedit', function(req, res, next) {
-	var userId = req.cookies.userId,
-		productId = req.body.productId,
-		productNum = req.body.productNum,
-		checked = req.body.checked;
-	User.update({
-		'userId': userId,
-		'cartList.productId': productId
-	}, {
-		'cartList.$.productNum': productNum,
-		'cartList.$.checked': checked
-	}, function(err, doc) {
-		if (err) {
-			res.json({
-				status: '1',
-				msg: err.message,
-				result: ''
-			})
-		} else {
-			res.json({
-				status: '0',
-				msg: '',
-				result: 'success'
-			})
+UserRouter.post('/cartedit', async ctx=>{
+	let userId = ctx.session.userid,
+	{productId,productNum ,checked } = ctx.request.body;
+	let [err1,cart] = await handlerAsyncError(Models.carts.findOne({
+		where:{
+			user_id:userId,
+			product_id:productId
 		}
-	})
+	}))
+	if(err1){
+		return ctx.body={
+			status: '1',
+			msg: err1.message,
+			result: ''
+		}
+	}
+ 	let [err2,rs] = await handlerAsyncError(cart.update({product_count:productNum,checked:parseInt(checked)},{fields: ['product_count','checked']}))
+	if(err2){
+		return ctx.body={
+			status: '1',
+			msg: err2.message,
+			result: ''
+		}
+	}
+	if(rs){
+		return ctx.body = {
+			status: '0',
+			msg: '',
+			result: 'success'
+		}
+	}
+
 })
 
-UserRouter.post('/editCheckAll', function(req, res, next) {
-	var userId = req.cookies.userId,
-		checkAll = req.body.checkAll ? '1' : '0';
-	User.findOne({
-		userId: userId
-	}, function(err, doc) {
-		if (err) {
-			res.json({
-				status: '1',
-				msg: err.message,
-				result: ''
-			})
-		} else {
-			if (doc) {
-				doc.cartList.forEach((item) => {
-					item.checked = checkAll;
-				})
-				doc.save(function(err1, doc1) {
-					if (err1) {
-						res.json({
-							status: '1',
-							msg: err1.message,
-							result: ''
-						})
-					} else {
-						res.json({
-							status: '0',
-							msg: '',
-							result: 'success'
-						})
-					}
-				})
-			}
-
+UserRouter.post('/editCheckAll', async ctx=> {
+	let userId = ctx.session.userid,
+	{ checkAll } = ctx.request.body;
+	checkAll = checkAll ? 1 : 0;
+	// 更新所有商品记录状态
+	let [err,rs] = await handlerAsyncError(Models.carts.update({checked:checkAll},{
+		where:{
+			checked:{[Op.in]:[0,1]}
 		}
-	})
+	}))
+	if(err){
+		ctx.body = {
+			status: '1',
+			msg: err.message,
+			result: ''
+		}
+	}else{
+		ctx.body={
+			status: '0',
+			msg: '',
+			result: 'success'
+		}
+	}
 })
 
 //购车商品数量
 UserRouter.get('/getCartCount', async ctx=> {
 	if (ctx.session.userid) {
 		let rs = await Models.carts.findAndCountAll({
-			attributes: ['product_id'],
+			attributes: ['product_id','product_count'],
 			where:{
 				user_id: ctx.session.userid
 			}
 		})
-		// console.log('rs',rs)
-		const { count } = rs
+		// console.log('rs',rs.rows[0].product_count)
+		const { rows } = rs
+		let count = 0;
+		rows.forEach(item=>{
+			count+=item.product_count
+		})
 		ctx.body = {
 			status: '0',
 			msg: '',
@@ -549,7 +573,6 @@ UserRouter.post('/payMent', function(req, res, next) {
 				createDate: createDate
 			}
 
-			console.log(doc)
 
 			doc.orederList.push(order);
 			doc.save(function(err1, doc1) {

@@ -1,6 +1,8 @@
 const GoodRouter = require('koa-router')()
 const Models =require('../models/index')
 const { Sequelize } = Models.sequelize;
+const Op = Sequelize.Op;
+const { handlerAsyncError } = require('../utils/index')
 //查询商品列表
 GoodRouter.get('/list', async ctx=>{
 	let {page,pageSize,sort,priceLevel} = ctx.request.query;
@@ -45,7 +47,6 @@ GoodRouter.get('/list', async ctx=>{
 	})
 	// console.log(Models)
 	let {rows} = goods
-	console.log('rows',rows)
 	if(goods){
 		ctx.body = {
 			status:0,
@@ -64,84 +65,69 @@ GoodRouter.get('/list', async ctx=>{
 })
 
 //加入购物车
-/*
-GoodRouter.post('/addCart', function(req, res, next) {
-	// userId = '100000077'
-	var userId = req.cookies.userId,
-		productId = req.body.productId;
-
-	console.log(productId)
-	User.findOne({
-		userId: userId
-	}, function(err, userDoc) {
-		if (err) {
-			res.json({
+/* 
+	1、 商品没有加入购物车 ， 在carts表增添一条记录
+	2、 carts存在记录 ，修改原有数量
+*/
+GoodRouter.post('/addCart', async ctx=> {
+	let userId = ctx.session.userid,
+	{productId} = ctx.request.body;
+	let [err1,cart] = await handlerAsyncError(Models.carts.findOne({
+		where:{
+			user_id:userId,
+			product_id:productId
+		}
+	}))
+	if(err1){
+		return ctx.body={
+			status: '1',
+			msg: err1.message,
+			result: ''
+		}
+	}
+	// 存在记录
+	if(cart){
+		// 数量增加
+		cart.product_count = ++cart.product_count;
+		let [error,rs] = await handlerAsyncError(cart.save());
+		if(error){
+			ctx.body = {
 				status: '1',
-				msg: err.message
-			})
-		} else {
-			if (userDoc) {
-
-				let goosdItem = '';
-				userDoc.cartList.forEach((item) => {
-					if (item.productId == productId) {
-						goosdItem = item;
-						item.productNum++;
-					}
-				})
-
-				if (goosdItem) {
-					userDoc.save(function(err2, doc2) {
-						if (err2) {
-							res.json({
-								status: '1',
-								msg: err2.message
-							})
-						} else {
-							res.json({
-								status: '0',
-								msg: '',
-								result: 'success'
-							})
-						}
-					})
-				} else {
-					Goods.findOne({
-						productId: productId
-					}, function(err1, doc) {
-						if (err1) {
-							res.json({
-								status: '1',
-								msg: err1.message
-							})
-						} else {
-							if (doc) {
-								doc.productNum = 1;
-								doc.checked = 1;
-								userDoc.cartList.push(doc);
-								userDoc.save(function(err2, doc2) {
-									if (err2) {
-										res.json({
-											status: '1',
-											msg: err2.message
-										})
-									} else {
-										res.json({
-											status: '0',
-											msg: '',
-											result: 'success'
-										})
-									}
-								})
-							}
-						}
-					})
-				}
-
-
+				msg: error.message,
+				result: ''
+			}
+		}else{
+			ctx.body = {
+				status: '0',
+				msg: '',
+				result: 'success'
 			}
 		}
-	})
-}) */
+	}else{
+		// 增添记录
+		let [err2,res] = await handlerAsyncError(Models.carts.build({
+			user_id:userId,
+			product_id:productId,
+			product_count:1,
+			checked:0
+		}).save())
+
+		if(err2){
+			return ctx.body={
+				status: '1',
+				msg: err1.message,
+				result: ''
+			}
+		}
+
+		if(res){
+			return ctx.body={
+				status: '0',
+				msg: '',
+				result: 'success'
+			}
+		}
+	}
+})
 
 module.exports = GoodRouter;
