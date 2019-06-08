@@ -58,7 +58,7 @@
 		mounted(){
 			var orderId = this.$route.query.orderId;
 			if(!orderId)return;
-			axios.get('/users/orderDetail',{params:{orderId:orderId}}).then((response)=>{
+			axios.get('/users/orderSuccess',{params:{orderId:orderId}}).then((response)=>{
 				let res =response.data;
 				if(res.status == '0'){
 					this.orderId = orderId;

@@ -673,8 +673,34 @@ UserRouter.post('/payMent', async ctx=> {
 	}
 })
 
-//根据订单id 查询订单信息
-UserRouter.get('/orderDetail', async ctx=> {
+// 订单列表
+UserRouter.get('/orderList', async ctx=>{
+	let userId = ctx.session.userid
+	let [err,res] = await handlerAsyncError(Models.orders.findAll({
+		where:{
+			user_id:userId
+		},
+		include:[
+			{model:Models.address},
+			{model:Models.goods}
+		]
+	}))
+	if(err){
+		ctx.response.status = 500;
+		return ctx.body = {
+			status:'1',
+			msg: err.message
+		}
+	}
+	ctx.body = {
+		status:'0',
+		msg:'',
+		result:res
+	}
+})
+
+//订单成功信息
+UserRouter.get('/orderSuccess', async ctx=> {
 	let userId = ctx.session.userid,
 		{orderId} = ctx.request.query;
 	let [err,res] = await handlerAsyncError(Models.orders.findOne({
@@ -705,6 +731,38 @@ UserRouter.get('/orderDetail', async ctx=> {
 			msg: '无此订单',
 			result: ''
 		}
+	}
+})
+
+// 根据订单id 查询订单信息
+UserRouter.get('/orderDetail',async ctx=>{
+	let userId = ctx.session.userid,
+		{orderId} = ctx.request.query;
+	let [err,res] = await handlerAsyncError(Models.orders.findOne({
+		where:{
+			user_id:userId,
+			order_id:orderId
+		},
+		include:[
+			{model:Models.address},
+			{model:Models.goods}
+		]
+	}))
+	if(err){
+		ctx.response.status = 500;
+		return ctx.body = {
+			status:'1',
+			msg: err.message
+		}
+	}
+	// console.log('res',res)
+	// console.log('address',res.address)
+	// console.log('goods',res.goods)
+	// return
+	ctx.body = {
+		status:'0',
+		msg:'',
+		result:res
 	}
 })
 module.exports = UserRouter;

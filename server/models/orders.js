@@ -22,7 +22,11 @@ module.exports = (sequelize, DataTypes) => {
     },
     address_id:{
       type: DataTypes.INTEGER,
-      allowNull:false
+      allowNull:false,
+      references:{
+        model:'address',
+        key:'address_id'
+      }
     },
     order_total:{
       type: DataTypes.INTEGER,
@@ -48,9 +52,12 @@ module.exports = (sequelize, DataTypes) => {
     orders.belongsTo(models.users,{
       foreignKey:'user_id'
     })
+    orders.belongsTo(models.address,{
+      foreignKey:'address_id'
+    })
     orders.belongsToMany(models.goods,{
       // as:'sellGoods',
-      foreignKey:'product_id',
+      foreignKey:'order_id',
       through: {
         model: models.orderGoods
       }

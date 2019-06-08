@@ -119,7 +119,7 @@
 		        </div>
 		      </div>
 		      <div class="next-btn-wrap">
-		        <router-link class="btn btn--m btn--red" :to="{path:'/orderConfirm',query:{'addressId':selectedAddrId}}">Next</router-link>
+		        <a href = "javascript:;" class="btn btn--m btn--red" @click="nextPath">Next</a>
 		      </div>
 		    </div>
 		  </div>
@@ -267,6 +267,12 @@
 						this.init();
 					}
 				})
+			},
+			nextPath(){
+				if(!this.selectedAddrId){
+					return alert('Please Select a Default Address !')
+				}
+				this.$router.push({path:'/orderConfirm',query:{'addressId':this.selectedAddrId}})
 			}
 		},
 		components:{

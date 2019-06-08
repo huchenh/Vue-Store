@@ -8,7 +8,8 @@ import OrderSuccess from './../views/orderSuccess.vue'
 import adminIndex from './../views/admin/admin.vue'
 import editGood from './../views/admin/edit.vue'
 import addGood from './../views/admin/add.vue'
-
+import orderList from './../views/orderLists.vue'
+import orderDetail from './../views/orderDetail.vue'
 
 Vue.use(Router)
 
@@ -32,6 +33,12 @@ export default new Router({
 	}, {
 		path: '/orderSuccess',
 		component: OrderSuccess
+	},{
+		path: '/orderList',
+		component: orderList
+	},{
+		path: '/orderDetail',
+		component: orderDetail
 	}, {
 		path: '/admin',
 		component: adminIndex

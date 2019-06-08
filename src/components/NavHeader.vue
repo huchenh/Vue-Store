@@ -21,6 +21,7 @@
              <a href="javascript:void(0)" class="navbar-link" @click="registerModalFlag=true" v-if="!nickName">Register</a>
 		        <a href="javascript:void(0)" class="navbar-link" @click="loginModalFlag=true" v-if="!nickName">Login</a>
 		        <a href="javascript:void(0)" class="navbar-link" @click="logout"  v-if="nickName!=''">Logout</a>
+             <a href="javascript:void(0)" class="navbar-link" @click="getOrderList" v-if="nickName!=''">my order</a>
 		        <div class="navbar-cart-container">
 		          <span class="navbar-cart-count" v-show="cartCount!=0">{{cartCount}}</span>
 		          <a class="navbar-link navbar-cart-link" href="/#/cart">
@@ -197,6 +198,11 @@
             this.$router.push('/')
           }
         })
+      },
+      getOrderList(){
+        this.$router.push({
+							path:'/orderList'
+						})
       }
     }
 	}
