@@ -34,6 +34,7 @@ UserRouter.post('/register',async ctx=>{
 			}
 		})
 	}catch(err){
+		ctx.response.status = 500;
 		return ctx.body = {
 			status: "1",
 			msg: err.message
@@ -55,6 +56,7 @@ UserRouter.post('/register',async ctx=>{
 			password:mdPwd
 		}).save()
 	}catch(error){
+		ctx.response.status = 500;
 		return ctx.body = {
 			status: '1',
 			msg: err1.message,
@@ -84,6 +86,7 @@ UserRouter.post('/login',async ctx=>{
 			}
 		})
 	}catch(err){
+		ctx.response.status = 500;
 		return ctx.body = {
 			status: "1",
 			msg: err.message
@@ -166,6 +169,7 @@ UserRouter.get('/cartList', async ctx => {
 	}))
 	
 	if(err){
+		ctx.response.status = 500;
 		return ctx.body = {
 				status: '1',
 				msg: err.message,
@@ -207,6 +211,7 @@ UserRouter.post('/cartdel', async ctx=> {
 		}
 	}))
 	if(err1){
+		ctx.response.status = 500;
 		return ctx.body={
 			status: '1',
 			msg: err1.message,
@@ -216,6 +221,7 @@ UserRouter.post('/cartdel', async ctx=> {
 	// 删除该记录
 	let [err2,rs] = await handlerAsyncError(cart.destroy())
 	if(err2){
+		ctx.response.status = 500;
 		return ctx.body={
 			status: '1',
 			msg: err2.message,
@@ -229,29 +235,6 @@ UserRouter.post('/cartdel', async ctx=> {
 			result: 'success'
 		}
 	}
-	/* User.update({
-		userId: userId
-	}, {
-		$pull: {
-			'cartList': {
-				'productId': productId
-			}
-		}
-	}, function(err, doc) {
-		if (err) {
-			res.json({
-				status: '1',
-				msg: err.message,
-				result: ''
-			})
-		} else {
-			res.json({
-				status: '0',
-				msg: '',
-				result: 'succeess'
-			})
-		}
-	}) */
 })
 //购物车修改
 UserRouter.post('/cartedit', async ctx=>{
@@ -264,6 +247,7 @@ UserRouter.post('/cartedit', async ctx=>{
 		}
 	}))
 	if(err1){
+		ctx.response.status = 500;
 		return ctx.body={
 			status: '1',
 			msg: err1.message,
@@ -272,6 +256,7 @@ UserRouter.post('/cartedit', async ctx=>{
 	}
  	let [err2,rs] = await handlerAsyncError(cart.update({product_count:productNum,checked:parseInt(checked)},{fields: ['product_count','checked']}))
 	if(err2){
+		ctx.response.status = 500;
 		return ctx.body={
 			status: '1',
 			msg: err2.message,
@@ -299,6 +284,7 @@ UserRouter.post('/editCheckAll', async ctx=> {
 		}
 	}))
 	if(err){
+		ctx.response.status = 500;
 		ctx.body = {
 			status: '1',
 			msg: err.message,
@@ -358,6 +344,7 @@ UserRouter.get('/addressList', async ctx=> {
 		}
 	}))
 	if(err){
+		ctx.response.status = 500;
 		return ctx.body = {
 			status: '1',
 			msg: err.message,
@@ -404,6 +391,7 @@ UserRouter.post('/setDefault', async ctx=> {
 		}
 	}))
 	if(err){
+		ctx.response.status = 500;
 		return ctx.body = {
 			status: '1',
 			msg: err.message,
@@ -418,6 +406,7 @@ UserRouter.post('/setDefault', async ctx=> {
 			{where:{'is_default':1}}
 		))
 		if(error){
+			ctx.response.status = 500;
 			return ctx.body = {
 				status: '1',
 				msg: err.message,
@@ -427,6 +416,7 @@ UserRouter.post('/setDefault', async ctx=> {
 		address.is_default = 1
 		let [err,rs] = await handlerAsyncError(address.save())
 		if(err){
+			ctx.response.status = 500;
 			return ctx.body = {
 				status: '1',
 				msg: err.message,
@@ -448,43 +438,6 @@ UserRouter.post('/setDefault', async ctx=> {
 			result: 'succeess'
 		}
 	}
-		/* User.findOne({
-			userId: userId
-		}, function(err, doc) {
-			if (err) {
-				res.json({
-					status: '1',
-					msg: err.message,
-					result: ''
-				})
-			} else {
-				var addressList = doc.addressList;
-				addressList.forEach((item) => {
-					if (item.addressId == addressId) {
-						item.isDefault = true;
-					} else {
-						item.isDefault = false
-					}
-				})
-
-				doc.save(function(err1, doc1) {
-					if (err1) {
-						res.json({
-							status: '1',
-							msg: err.message,
-							result: ''
-						})
-					} else {
-						res.json({
-							status: '0',
-							msg: '',
-							result: 'succeess'
-						})
-					}
-				})
-
-			}
-		}) */
 })
 //删除地址
 UserRouter.post('/delAddress', async ctx=> {
@@ -526,6 +479,7 @@ UserRouter.post('/addAddress', async ctx=> {
 		}
 	}))
 	if(err){
+		ctx.response.status = 500;
 		return ctx.body = {
 			status: '1',
 			msg: err.message,
@@ -548,6 +502,7 @@ UserRouter.post('/addAddress', async ctx=> {
 	console.log('address1',address1)
 	// console.log('address1',address1[0].address_id)
 	if(err1){
+		ctx.response.status = 500;
 		return ctx.body = {
 			status: '1',
 			msg: err1.message,
@@ -568,6 +523,7 @@ UserRouter.post('/addAddress', async ctx=> {
 		tel
 	}))
 	if(err2){
+		ctx.response.status = 500;
 		return ctx.body = {
 			status: '1',
 			msg: err2.message,
@@ -604,6 +560,7 @@ UserRouter.post('/payMent', async ctx=> {
 		}
 	}))
 	if(error){
+		ctx.response.status = 500;
 		return ctx.body = {
 			status: '1',
 			msg: error.message,
@@ -623,6 +580,7 @@ UserRouter.post('/payMent', async ctx=> {
 	// 订单商品表插入数据 usergoods
 	let [error1,res1] = await handlerAsyncError(Models.orderGoods.bulkCreate(orderGoods))
 	if(error1){
+		ctx.response.status = 500;
 		return ctx.body = {
 			status: '1',
 			msg: error1.message,
@@ -641,6 +599,7 @@ UserRouter.post('/payMent', async ctx=> {
 		updateDate:createDate
 	}))
 	if(err){
+		ctx.response.status = 500;
 		return ctx.body = {
 			status: '1',
 			msg: err.message,
@@ -657,6 +616,7 @@ UserRouter.post('/payMent', async ctx=> {
 	}))
 
 	if(error2){
+		ctx.response.status = 500;
 		return ctx.body = {
 			status: '1',
 			msg: error2.message,
@@ -687,6 +647,7 @@ UserRouter.get('/orderList', async ctx=>{
 	}))
 	if(err){
 		ctx.response.status = 500;
+		ctx.response.status = 500;
 		return ctx.body = {
 			status:'1',
 			msg: err.message
@@ -710,6 +671,7 @@ UserRouter.get('/orderSuccess', async ctx=> {
 		}
 	}))
 	if(err){
+		ctx.response.status = 500;
 		return ctx.body = {
 			status: '1',
 			msg: err.message,

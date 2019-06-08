@@ -91,18 +91,18 @@
 				axios.get('/admin/search',{params:{id:this.productId}}).then((response)=>{
 					let res = response.data;
 					if(res.status == '0'){
-						this.product = res.result[0]
-						this.productName = res.result[0].productName,
-						this.price = res.result[0].salePrice;
-						this.id = res.result[0].productId;
-						this._id = res.result[0]['_id'];
+						this.product = res.result
+						this.productName = res.result.product_name,
+						this.price = res.result.sale_price;
+						this.id = res.result.product_id;
+						// this._id = res.result['_id'];
 					}else{
 						alert(res.msg)
 					}
 				})
 			},
 			edit(){
-				axios.post('/admin/edit',{id:this.id,price:this.price,name:this.productName,_id:this._id}).then((response)=>{
+				axios.post('/admin/edit',{id:this.id,price:this.price,name:this.productName}).then((response)=>{
 					let res = response.data;
 					if(res.status == '0'){
 						this.mdShow = true;

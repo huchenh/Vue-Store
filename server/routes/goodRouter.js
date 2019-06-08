@@ -41,7 +41,7 @@ GoodRouter.get('/list', async ctx=>{
 
 	let goods = await Models.goods.findAndCountAll({
 		offset,
-		order:[['sale_price',sort]],
+		order:[['sale_price',sort],['updatedAt','DESC']],
 		limit:pageSize,
 		where: searchParam
 	})
@@ -86,6 +86,7 @@ GoodRouter.post('/addCart', async ctx=> {
 		}
 	}))
 	if(err1){
+		ctx.response.status = 500;
 		return ctx.body={
 			status: '1',
 			msg: err1.message,
@@ -98,6 +99,7 @@ GoodRouter.post('/addCart', async ctx=> {
 		cart.product_count = ++cart.product_count;
 		let [error,rs] = await handlerAsyncError(cart.save());
 		if(error){
+			ctx.response.status = 500;
 			ctx.body = {
 				status: '1',
 				msg: error.message,
@@ -120,6 +122,7 @@ GoodRouter.post('/addCart', async ctx=> {
 		}).save())
 
 		if(err2){
+			ctx.response.status = 500;
 			return ctx.body={
 				status: '1',
 				msg: err1.message,

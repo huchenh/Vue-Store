@@ -37,6 +37,9 @@ node app.js
 - 新版vue-lazyload 要在图片加上 :key=‘图片路径’ 图片才会随着数据改变
 - sequelize 多对多联合查询 需要一张中间表 记录 users 和 商品goods 之间的联系。且 中间表（carts） 要关联到 users表和goods的主键
 - 目前完成 商品展示分页接口 用户登录，注册，登出， 购物车展示接口
+- 登录账号，购物车商品数量，多个组件可以更改，前端用vuex 维护二者的状态
+- koa-bodyparser 与 koa-body（用来处理文件） 功能由重叠，可以只使用koa-body ，或者 先使用 koa-body，再使用koa-bodyParser顺序不能乱。否则会导致POST请求被挂起
+- 商品与订单、商品与用户表 均是 n:m,模型关联选项onUpdate 和 onDelete 两者默认值是 CASCADE. 这意味着,如果你从 n:m 关联的一侧删除或更新一行，则引用该行的连接表中的所有行也将被删除或更新。即删除某商品，购物车 和订单中的商品记录均会消失。
 - 待续。。。。
 ## API(后台路由)设计
 API概览（参照）：[https://github.com/huchenh/storeProject/blob/master/README.md] <br/>

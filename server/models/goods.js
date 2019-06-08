@@ -51,14 +51,18 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey:'product_id',
       through: {
         model: models.carts
-      }
+      },
+      onUpdate:'CASCADE',
+      onDelete:'CASCADE'
     })
     goods.belongsToMany(models.orders,{
       // as:'sellGoods',
       foreignKey:'product_id',
       through: {
         model: models.orderGoods
-      }
+      },
+      onUpdate:'CASCADE',
+      onDelete:'CASCADE'
     })
   };
   return goods;

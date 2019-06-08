@@ -56,15 +56,15 @@
 		                    </thead>
 		                    <tbody>
 
-		                    <tr v-for="(item,index) in newList">
+		                    <tr v-for="(item,index) in newList" :key="index">
 		                        <td>{{item.productId}}</td>
-		                        <td><img style="width:60px;" :src="'/static/'+item.productImage" /></td>
-		                        <td>{{item.productName}}</td>
-		                        <td>{{item.salePrice}}</td>
+		                        <td><img style="width:60px;" :src="'/static/'+item.product_image" /></td>
+		                        <td>{{item.product_name}}</td>
+		                        <td>{{item.sale_price}}</td>
 		                        <td class="text-center">
-		                        	<router-link :to="{name:'editgoods',params:{goodId:item.productId} }">编辑</router-link>
+		                        	<router-link :to="{name:'editgoods',params:{goodId:item.product_id} }">编辑</router-link>
 		                        	<!-- <a href="javascript:;">编辑</a>  -->
-		                        	<a href="javascript:;" @click="delGood(item.productId)">删除</a>
+		                        	<a href="javascript:;" @click="delGood(item.product_id)">删除</a>
 		                        </td>
 		                    </tr>
 		                    </tbody>
@@ -138,7 +138,7 @@
 			searchList(){
 				if(this.searchName){
 					this.newList = this.newList.filter((item)=>{
-						return item.productName.indexOf(this.searchName) > -1
+						return item.product_name.indexOf(this.searchName) > -1
 					})
 				}else{
 					this.newList = this.list;

@@ -91,10 +91,10 @@
           let res = response.data;
           if(res.status == '0'){
             // this.mdShow = true;
-            this.flag = true;
           }else{
             this.msg= res.msg;
           }
+          this.flag = true;
         })
       },
       add() {
