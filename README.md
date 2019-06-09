@@ -186,7 +186,9 @@ API概览（参照）：[https://github.com/huchenh/storeProject/blob/master/REA
 ## 商城预览
 
 **`移动效果`**
+
 ![image](https://github.com/huchenh/Vue-Store/tree/master/static/result-image/weiaistore.gif)
 
 **`PC`**
+
 ![image](https://github.com/huchenh/Vue-Store/tree/master/static/result-image/pc.png)
