@@ -32,11 +32,15 @@ Vue.use(infiniteScroll)
 const store = new Vuex.Store({
 	state: {
 		nickName: '',
+		isAdmin: 0,
 		cartCount: 0
 	},
 	mutations: {
 		updateUserInfo(state, nickName) {
 			state.nickName = nickName
+		},
+		updateUserAdmin(state,isAdmin){
+			state.isAdmin = isAdmin;
 		},
 		updateCartCount(state, cartCount) {
 			state.cartCount += cartCount;

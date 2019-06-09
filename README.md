@@ -3,7 +3,6 @@
 >- 后台是node + koa + mysql 提供接口
 >- sequelize 操作数据库，sequence-cli 数据迁移备份
 
-
 ## 项目运行
 **`前台`**
 ``` bash
@@ -31,6 +30,9 @@ npm run build --report
 # server目录包含后台的所有处理逻辑 启动后台
 node app.js
 
+# 初始账户
+admin  123456  有后台管理入口
+chenhu 123456  无
 ```
 
 ## 遇到的坑
@@ -39,7 +41,10 @@ node app.js
 - 目前完成 商品展示分页接口 用户登录，注册，登出， 购物车展示接口
 - 登录账号，购物车商品数量，多个组件可以更改，前端用vuex 维护二者的状态
 - koa-bodyparser 与 koa-body（用来处理文件） 功能由重叠，可以只使用koa-body ，或者 先使用 koa-body，再使用koa-bodyParser顺序不能乱。否则会导致POST请求被挂起
+
 - 商品与订单、商品与用户表 均是 n:m,模型关联选项onUpdate 和 onDelete 两者默认值是 CASCADE. 这意味着,如果你从 n:m 关联的一侧删除或更新一行，则引用该行的连接表中的所有行也将被删除或更新。即删除某商品，购物车 和订单中的商品记录均会消失。
+
+- 后台商品管理：信息编辑 ，删除等操作 都会影响已生成订单商品中的信息。为了不影响订单信息，可以取消 `goods(商品表)` 和`orders(订单表)`的 `“n:m”`, 将订单中的商品信息全部存放再`订单商品表中（orderGoods）` --- 改动涉及表结构，订单、商品等模块的接口更改，暂未完成。
 - 待续。。。。
 ## API(后台路由)设计
 API概览（参照）：[https://github.com/huchenh/storeProject/blob/master/README.md] <br/>
@@ -177,3 +182,11 @@ API概览（参照）：[https://github.com/huchenh/storeProject/blob/master/REA
 |:--:|:--:|:--:|
 | order_id | order | address_id |
 | product_id | goods | product_id |
+
+## 商城预览
+
+**`移动效果`**
+![image](https://github.com/huchenh/Vue-Store/tree/master/static/result-image/weiaistore.gif)
+
+**`PC`**
+![image](https://github.com/huchenh/Vue-Store/tree/master/static/result-image/pc.png)

@@ -22,6 +22,7 @@
 		        <a href="javascript:void(0)" class="navbar-link" @click="loginModalFlag=true" v-if="!nickName">Login</a>
 		        <a href="javascript:void(0)" class="navbar-link" @click="logout"  v-if="nickName!=''">Logout</a>
              <a href="javascript:void(0)" class="navbar-link" @click="getOrderList" v-if="nickName!=''">my order</a>
+             <a href="javascript:void(0)" class="navbar-link" @click="toAdmin" v-if="isAdmin && nickName!=''">Admin Entrance</a>
 		        <div class="navbar-cart-container">
 		          <span class="navbar-cart-count" v-show="cartCount!=0">{{cartCount}}</span>
 		          <a class="navbar-link navbar-cart-link" href="/#/cart">
@@ -122,6 +123,9 @@
       },
       cartCount(){
         return this.$store.state.cartCount
+      },
+      isAdmin(){
+        return this.$store.state.isAdmin || parseInt(localStorage.getItem('isAdmin'))
       }
     },
     methods:{
@@ -178,6 +182,9 @@
             this.loginModalFlag = false;
             // this.nickName = res.result.userName;
             this.$store.commit('updateUserInfo',res.result.userName);
+            this.$store.commit('updateUserAdmin',res.result.isAdmin);
+            // 存入 session
+            localStorage.setItem('isAdmin',res.result.isAdmin + '')
             this.getCartCount()
             location.reload();
           }else{
@@ -195,6 +202,8 @@
             this.userPwd = '';
             this.$store.commit('updateUserInfo','')
             this.$store.commit('clearCartCount',0)
+             this.$store.commit('updateUserAdmin',0);
+            localStorage.removeItem('isAdmin')
             this.$router.push('/')
           }
         })
@@ -203,6 +212,11 @@
         this.$router.push({
 							path:'/orderList'
 						})
+      },
+      toAdmin(){
+        this.$router.push({
+          path:'/admin'
+        })
       }
     }
 	}
