@@ -99,7 +99,8 @@ UserRouter.post('/login',async ctx=>{
 			status: '0',
 			msg: '',
 			result: {
-				userName: user.get('username')
+				userName: user.get('username'),
+				isAdmin: user.get('is_admin')
 			}
 		}
 	}else{

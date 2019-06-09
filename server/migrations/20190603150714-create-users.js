@@ -20,6 +20,10 @@ module.exports = {
         type:Sequelize.STRING,
         allowNull:false
       },
+      is_admin:{
+        type:Sequelize.INTEGER(1),
+        defaultValue: 0
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

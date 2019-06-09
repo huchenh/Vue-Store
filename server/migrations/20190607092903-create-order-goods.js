@@ -17,7 +17,7 @@ module.exports = {
         allowNull:false
       },
       product_count:{
-        type:DataTypes.INTEGER,
+        type:Sequelize.INTEGER,
         allowNull:false
       },
       createdAt: {

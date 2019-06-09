@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
     password:{
       type:DataTypes.STRING,
       allowNull:false
+    },
+    is_admin:{
+      type:DataTypes.INTEGER(1),
+      defaultValue: 0
     }
   }, {
     tableName: 'users'

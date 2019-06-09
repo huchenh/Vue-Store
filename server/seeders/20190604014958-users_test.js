@@ -17,6 +17,7 @@ module.exports = {
           user_id:100000077,
           username:'admin',
           password:md5('123456'),
+          is_admin:1,
           createdAt: new Date,
           updatedAt: new Date
         },
@@ -24,6 +25,7 @@ module.exports = {
           user_id:100000580,
           username:'chenhu',
           password:md5('123456'),
+          is_admin:0,
           createdAt: new Date,
           updatedAt: new Date
         }
