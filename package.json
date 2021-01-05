@@ -16,7 +16,7 @@
 		"mysql"
 	],
 	"dependencies": {
-		"axios": "^0.18.0",
+		"axios": "^0.21.1",
 		"bootstrap": "^3.3.7",
 		"debug": "~2.6.0",
 		"ejs": "^2.5.6",
