@@ -17,7 +17,7 @@
 	],
 	"dependencies": {
 		"axios": "^0.18.0",
-		"bootstrap": "^3.3.7",
+		"bootstrap": "^3.4.1",
 		"debug": "~2.6.0",
 		"ejs": "^2.5.6",
 		"http-errors": "^1.6.3",
